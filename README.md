@@ -1,19 +1,19 @@
 # naylec.github.io - commits
 
 ## 1 : first website version (home categorie)
-
+## 2 : second (home and météo) website version boosted by V0
 
 ---
 
-# README
+# README - plan
 
 ## ---NAYWEB--- ##
 
 ### Home ###
-
 - CV
-- Contacts (social)
+- Social media
 - Who i am
+- tchat with ai
 
 #### météo ###
 - OpenWeatherMap API
@@ -25,6 +25,7 @@
 - FreeDictionary API
 - ZenQuotes API
 - AlphaVantage API
+- journée internationale de ""
 
 ### divertissements ####
 - Watchmode API
