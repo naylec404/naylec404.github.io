@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>nayactus</title>
+    <link rel="stylesheet" href="style-actus.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <a href="index.html" class="logo">nayweb</a>
+            <nav>
+                <input type="checkbox" id="nav-toggle" class="nav-toggle">
+                <label for="nav-toggle" class="nav-toggle-label">
+                    <span></span>
+                </label>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="index-actus.html" class="active">Actus</a></li>
+                    <li><a href="index-weather.html">Météo</a></li>
+                    <li><a href="#">Divertissement</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="news-section">
+            <h1 class="page-title"><br> <br>Infos & News</h1>
+            <div class="news-grid">
+                <div class="news-card" id="stock-market">
+                    <h2>Bourse</h2>
+                    <div class="card-content">
+                        <p>Chargement des données financières...</p>
+                    </div>
+                </div>
+                <div class="news-card" id="special-day">
+                    <h2>Jour</h2>
+                    <div class="card-content">
+                        <p>Chargement des informations...</p>
+                    </div>
+                </div>
+                <div class="news-card" id="daily-quote">
+                    <h2>Citation</h2>
+                    <div class="card-content">
+                        <p>Aucune citation disponible pour le moment.</p>
+                    </div>
+                </div>
+                <div class="news-card" id="world-news">
+                    <h2>Actualités Mondiales</h2>
+                    <div class="card-content">
+                        <p>Chargement des actualités...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 nayweb. Tous droits réservés.</p>
+            <p>Boosted by V0</p>
+        </div>
+    </footer>
+
+    <script src="actus.js"></script>
+</body>
+</html>
+
