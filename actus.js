@@ -28,11 +28,16 @@ function showError(elementId, message) {
 async function fetchWorldNews() {
     showLoading('world-news');
     try {
-        // Utiliser un proxy CORS pour éviter les erreurs
-        const response = await fetch(`https://corsproxy.io/?${encodeURIComponent(`https://api.worldnewsapi.com/search-news?api-key=${WORLD_NEWS_API_KEY}&text=world&language=fr&number=5`)}`);
+        // Utiliser un autre proxy CORS
+        const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(`https://api.worldnewsapi.com/search-news?api-key=${WORLD_NEWS_API_KEY}&text=world&language=fr&number=5`)}`);
         if (!response.ok) throw new Error('Erreur réseau');
         const data = await response.json();
-        return data;
+        
+        // AllOrigins renvoie les données dans un champ "contents" qui est une chaîne JSON
+        if (data && data.contents) {
+            return JSON.parse(data.contents);
+        }
+        throw new Error('Format de réponse invalide');
     } catch (error) {
         console.error('Erreur actualités:', error);
         showError('world-news', 'Impossible de charger les actualités.');
@@ -45,11 +50,16 @@ async function fetchStockMarket() {
     showLoading('stock-market');
     const randomCompany = companies[Math.floor(Math.random() * companies.length)];
     try {
-        // Utiliser un proxy CORS pour éviter les erreurs
-        const response = await fetch(`https://corsproxy.io/?${encodeURIComponent(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${randomCompany}&apikey=${ALPHA_VANTAGE_API_KEY}`)}`);
+        // Utiliser un autre proxy CORS
+        const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${randomCompany}&apikey=${ALPHA_VANTAGE_API_KEY}`)}`);
         if (!response.ok) throw new Error('Erreur réseau');
         const data = await response.json();
-        return { ...data, symbol: randomCompany };
+        
+        // AllOrigins renvoie les données dans un champ "contents" qui est une chaîne JSON
+        if (data && data.contents) {
+            return { ...JSON.parse(data.contents), symbol: randomCompany };
+        }
+        throw new Error('Format de réponse invalide');
     } catch (error) {
         console.error('Erreur marché boursier:', error);
         showError('stock-market', 'Impossible de charger les données financières.');
