@@ -2,6 +2,7 @@
 
 ## 1 : first website version (home categorie)
 ## 2 : second (home and météo) website version boosted by V0
+## idk : fixe some bugs and update bio, CV and add link to trip school
 
 ---
 
