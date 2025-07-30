@@ -60,37 +60,107 @@ async function fetchWorldNews() {
   }
 }
 
-// Function to fetch stock market data
+// Function to fetch stock market data améliorée
 async function fetchStockMarket() {
   showLoading("stock-market")
   const randomCompany = companies[Math.floor(Math.random() * companies.length)]
-  try {
-    // Essayer plusieurs proxies CORS
-    const proxies = ["https://api.allorigins.win/get?url=", "https://corsproxy.io/?"]
 
+  // APIs financières alternatives
+  const stockAPIs = [
+    {
+      name: "AlphaVantage",
+      url: `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${randomCompany}&apikey=${ALPHA_VANTAGE_API_KEY}`,
+      transform: (data, symbol) => {
+        if (data && data["Global Quote"]) {
+          const quote = data["Global Quote"]
+          return {
+            symbol: symbol,
+            name: symbol,
+            price: quote["05. price"],
+            change: quote["09. change"],
+            changePercent: quote["10. change percent"],
+            volume: quote["06. volume"],
+          }
+        }
+        return null
+      },
+    },
+    {
+      name: "Yahoo Finance",
+      url: `https://query1.finance.yahoo.com/v8/finance/chart/${randomCompany}`,
+      transform: (data, symbol) => {
+        if (data && data.chart && data.chart.result && data.chart.result[0]) {
+          const result = data.chart.result[0]
+          const meta = result.meta
+          return {
+            symbol: symbol,
+            name: meta.longName || symbol,
+            price: meta.regularMarketPrice?.toFixed(2) || "N/A",
+            change: (meta.regularMarketPrice - meta.previousClose || 0).toFixed(2),
+            changePercent:
+              (((meta.regularMarketPrice - meta.previousClose) / meta.previousClose) * 100 || 0).toFixed(2) + "%",
+            volume: meta.regularMarketVolume?.toLocaleString() || "N/A",
+          }
+        }
+        return null
+      },
+    },
+  ]
+
+  // Proxies CORS à essayer
+  const proxies = [
+    "", // Sans proxy d'abord
+    "https://api.allorigins.win/get?url=",
+    "https://corsproxy.io/?",
+    "https://cors-anywhere.herokuapp.com/",
+  ]
+
+  // Essayer chaque API avec chaque proxy
+  for (const api of stockAPIs) {
     for (const proxy of proxies) {
       try {
-        const url = `${proxy}${encodeURIComponent(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${randomCompany}&apikey=${ALPHA_VANTAGE_API_KEY}`)}`
-        const response = await fetch(url)
-        if (!response.ok) continue
+        const url = proxy
+          ? proxy.includes("allorigins")
+            ? `${proxy}${encodeURIComponent(api.url)}`
+            : `${proxy}${api.url}`
+          : api.url
 
-        const data = await response.json()
-        if (proxy.includes("allorigins") && data && data.contents) {
-          return { ...JSON.parse(data.contents), symbol: randomCompany }
-        } else if (data) {
-          return { ...data, symbol: randomCompany }
+        console.log(`Tentative ${api.name} avec proxy: ${proxy || "aucun"}`)
+
+        const response = await fetch(url, {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+          },
+        })
+
+        if (!response.ok) {
+          console.log(`${api.name} réponse non OK: ${response.status}`)
+          continue
+        }
+
+        let data = await response.json()
+
+        // Si on utilise allorigins, extraire le contenu
+        if (proxy && proxy.includes("allorigins") && data.contents) {
+          data = JSON.parse(data.contents)
+        }
+
+        const stockData = api.transform(data, randomCompany)
+        if (stockData && stockData.price !== "N/A") {
+          console.log(`Données boursières obtenues via ${api.name}:`, stockData)
+          return stockData
         }
       } catch (error) {
-        console.log(`Proxy ${proxy} failed for stocks:`, error)
+        console.log(`Erreur ${api.name} avec proxy ${proxy}:`, error)
         continue
       }
     }
-    throw new Error("Tous les proxies ont échoué")
-  } catch (error) {
-    console.error("Erreur marché boursier:", error)
-    showError("stock-market", "Impossible de charger les données financières.")
-    return null
   }
+
+  // Si toutes les APIs échouent, retourner null
+  console.log("Toutes les APIs boursières ont échoué")
+  return null
 }
 
 // Fonction pour obtenir les saints du jour (locale)
@@ -213,18 +283,24 @@ function updateWorldNews(data) {
   }
 }
 
-// Update stock market display
+// Mettre à jour la fonction updateStockMarket pour le nouveau format
 function updateStockMarket(data) {
   const stockMarketElement = document.getElementById("stock-market")
   const contentElement = stockMarketElement.querySelector(".card-content")
-  if (data && data["Global Quote"]) {
-    const quote = data["Global Quote"]
+
+  if (data && data.symbol) {
+    const changeColor = data.change && data.change.startsWith("+") ? "#00ff00" : "#ff4444"
+
     contentElement.innerHTML = `
-            <h3>${data.symbol}</h3>
-            <p>Prix: ${quote["05. price"]}</p>
-            <p>Variation: ${quote["09. change"]} (${quote["10. change percent"]})</p>
-            <p>Volume: ${quote["06. volume"]}</p>
-        `
+      <div class="stock-info">
+        <h3>${data.symbol}</h3>
+        <p class="stock-price">Prix: $${data.price}</p>
+        <p class="stock-change" style="color: ${changeColor};">
+          Variation: ${data.change} (${data.changePercent})
+        </p>
+        <p class="stock-volume">Volume: ${data.volume}</p>
+      </div>
+    `
   } else {
     contentElement.innerHTML = "<p>Données du marché boursier indisponibles.</p>"
   }
