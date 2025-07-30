@@ -215,35 +215,24 @@ async function fetchDailyQuote() {
     },
   ]
 
-  // Essayer plusieurs proxies CORS plus fiables
+  // Essayer plusieurs proxies CORS
   const proxies = [
     "", // Essayer d'abord sans proxy
+    "https://api.allorigins.win/raw?url=",
     "https://corsproxy.io/?",
-    "https://api.codetabs.com/v1/proxy?quest=",
-    "https://api.allorigins.win/get?url=",
   ]
 
   for (const api of quoteAPIs) {
     for (const proxy of proxies) {
       try {
-        let url
-        if (!proxy) {
-          url = api.url
-        } else if (proxy.includes("allorigins")) {
-          url = `${proxy}${encodeURIComponent(api.url)}`
-        } else {
-          url = `${proxy}${api.url}`
-        }
-
-        console.log(`Tentative citation avec: ${proxy || "direct"}`)
+        const url = proxy + encodeURIComponent(api.url)
+        console.log(`Tentative avec: ${url}`)
 
         const response = await fetch(url, {
           method: "GET",
           headers: {
             Accept: "application/json",
           },
-          // Ajouter un timeout
-          signal: AbortSignal.timeout(5000),
         })
 
         if (!response.ok) {
@@ -251,12 +240,8 @@ async function fetchDailyQuote() {
           continue
         }
 
-        let data = await response.json()
-
-        // Si on utilise allorigins, extraire le contenu
-        if (proxy && proxy.includes("allorigins") && data.contents) {
-          data = JSON.parse(data.contents)
-        }
+        const data = await response.json()
+        console.log("Données reçues:", data)
 
         const quote = api.transform(data)
         if (quote && quote.q && quote.a) {
@@ -264,7 +249,7 @@ async function fetchDailyQuote() {
           return quote
         }
       } catch (error) {
-        console.log(`Erreur avec ${api.url} via ${proxy || "direct"}:`, error.message)
+        console.log(`Erreur avec ${api.url} via ${proxy}:`, error)
         continue
       }
     }
